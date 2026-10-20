@@ -43,6 +43,20 @@ make -C fork baseline                 # only after reviewing a binary-check delt
 make -C fork install
 ```
 
+## Build-time network
+
+A build with warm caches makes no connection. A cold build fetches from exactly these hosts; anything else in a build log is a finding.
+
+| Host | What | Pinned by |
+|---|---|---|
+| `ziglang.org` | Zig 0.16.0 toolchain (`make -C fork zig`) | sha256 in `scripts/zig-install.sh` |
+| `index.crates.io`, `static.crates.io` | Rust crates | `Cargo.lock` checksums, `--locked` |
+| `github.com` | RustSec advisory database for cargo deny and cargo audit | git clone, read-only data |
+| `deps.files.ghostty.org` | Zig packages for the vendored parser (`uucode` and friends) | content hashes in `vendor/libghostty-vt/build.zig.zon` |
+| `codeberg.org` | `translate-c`, the Zig C-header translator the parser build needs | content hash in the same file |
+
+Zig packages land in `~/.cache/zig/p/` and are reused afterwards. For a fully offline parser build, upstream's Nix flake pre-fetches them and points `LIBGHOSTTY_VT_ZIG_SYSTEM_DIR` at the result; the fork can adopt the same once a reason appears.
+
 ## What each check covers
 
 | Step | Catches | Misses |
