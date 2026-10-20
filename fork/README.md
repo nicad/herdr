@@ -8,6 +8,7 @@ Run every target as `make -C fork <target>` from the repository root. `make -C f
 
 ```sh
 make -C fork tools            # cargo-deny, cargo-audit; osv-scanner is optional
+make -C fork zig              # Zig 0.16.0 under fork/toolchain/, checksum pinned; builds use it automatically
 make -C fork upstream-remote  # adds remote "upstream" -> https://github.com/herdrdev/herdr.git
 make -C fork check-config     # ~/.config/herdr/config.toml must disable both background fetches
 make -C fork verify           # build (ReleaseSafe parser, "-fork" version), cargo deny + cargo audit, binary check
@@ -56,7 +57,8 @@ Ghostty (the vendored terminal parser) and Zig have no cargo coverage. When the 
 
 ## Files
 
-- `Makefile`: targets above. Exports `LIBGHOSTTY_VT_OPTIMIZE=ReleaseSafe` and `HERDR_BUILD_CHANNEL=fork` for every build.
+- `Makefile`: targets above. Exports `LIBGHOSTTY_VT_OPTIMIZE=ReleaseSafe` and `HERDR_BUILD_CHANNEL=fork` for every build, and `ZIG` when `fork/toolchain/zig-0.16.0/` exists. Pass `ZIG=/path/to/zig` to use another install.
+- `scripts/zig-install.sh`: downloads the pinned Zig release and verifies its checksum against the values recorded in the script.
 - `scripts/sync-report.sh`, `scripts/deps-delta.sh`, `scripts/diff-grep.sh`: report generation.
 - `scripts/binary-check.sh`: static binary checks, baseline diff.
 - `scripts/check-config.sh`: local config verification.

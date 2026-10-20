@@ -15,13 +15,23 @@ UPSTREAM_REMOTE ?= upstream
 UPSTREAM_URL    ?= https://github.com/herdrdev/herdr.git
 UPSTREAM_REF    ?= $(UPSTREAM_REMOTE)/master
 PREFIX          ?= /usr/local
-# RustSec ids to ignore in cargo audit, e.g. AUDIT_IGNORE="--ignore RUSTSEC-2026-0001"
+# cargo audit fails only on vulnerabilities; unmaintained notices print as warnings and are
+# gated by fork/deny.toml instead. Extra flags, e.g. AUDIT_IGNORE="--ignore RUSTSEC-2026-0001".
 AUDIT_IGNORE    ?=
 
 # Zig runtime safety checks stay on in the vendored terminal parser.
 export LIBGHOSTTY_VT_OPTIMIZE ?= ReleaseSafe
 # Only changes the reported version to <version>-fork; stable code paths stay selected.
 export HERDR_BUILD_CHANNEL ?= fork
+
+# herdr builds only with this exact Zig version. `make zig` installs it under fork/toolchain/
+# and every build uses it; an explicit ZIG=/path/to/zig on the command line wins.
+ZIG_VERSION := 0.16.0
+TOOLCHAIN   := $(FORK)/toolchain
+ZIG_LOCAL   := $(TOOLCHAIN)/zig-$(ZIG_VERSION)/zig
+ifneq ($(wildcard $(ZIG_LOCAL)),)
+export ZIG ?= $(ZIG_LOCAL)
+endif
 
 # Deferred: evaluated when a target uses them, after fetch.
 OLD ?= $(shell cd $(ROOT) && git merge-base HEAD $(UPSTREAM_REF) 2>/dev/null)
@@ -30,13 +40,14 @@ NEW ?= $(UPSTREAM_REF)
 BASELINE_FILES := linked-libs undefined-symbols flagged-symbols urls exec-strings
 
 .DEFAULT_GOAL := help
-.PHONY: help tools upstream-remote check-config fetch sync-report rebase build audit binary-check baseline verify install clean
+.PHONY: help tools zig upstream-remote check-config fetch sync-report rebase build audit binary-check baseline verify install clean
 
 help:
 	@echo "herdr fork workflow (make -C fork <target>)"
 	@echo ""
 	@echo "First time:"
 	@echo "  tools            cargo install cargo-deny cargo-audit (osv-scanner optional)"
+	@echo "  zig              install Zig $(ZIG_VERSION) under fork/toolchain/ (checksum pinned)"
 	@echo "  upstream-remote  add remote '$(UPSTREAM_REMOTE)' -> $(UPSTREAM_URL) if missing"
 	@echo "  check-config     verify ~/.config/herdr/config.toml disables background fetches"
 	@echo "  verify           build + audit + binary-check"
@@ -56,6 +67,9 @@ tools:
 	cargo install --locked cargo-deny cargo-audit
 	@command -v osv-scanner >/dev/null 2>&1 || echo "optional second vulnerability database: brew install osv-scanner"
 
+zig:
+	$(SCRIPTS)/zig-install.sh $(ZIG_VERSION) $(TOOLCHAIN)
+
 upstream-remote:
 	@cd $(ROOT) && git remote get-url $(UPSTREAM_REMOTE) >/dev/null 2>&1 || git remote add $(UPSTREAM_REMOTE) $(UPSTREAM_URL)
 	@cd $(ROOT) && echo "$(UPSTREAM_REMOTE) -> $$(git remote get-url $(UPSTREAM_REMOTE))"
@@ -74,12 +88,13 @@ rebase:
 	cd $(ROOT) && git rebase $(NEW)
 
 build:
+	@echo "zig: $${ZIG:-zig (from PATH)}"
 	cd $(ROOT) && cargo build --release --locked
 	@$(BIN) --version
 
 audit:
-	cd $(ROOT) && cargo deny --locked check --config $(FORK)/deny.toml
-	cd $(ROOT) && cargo audit --deny warnings $(AUDIT_IGNORE)
+	cd $(ROOT) && cargo deny --locked --config $(FORK)/deny.toml check
+	cd $(ROOT) && cargo audit $(AUDIT_IGNORE)
 	@if command -v osv-scanner >/dev/null 2>&1; then cd $(ROOT) && osv-scanner scan source -L Cargo.lock; else echo "osv-scanner not installed; skipped"; fi
 
 binary-check:

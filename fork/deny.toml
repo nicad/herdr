@@ -12,29 +12,33 @@ targets = [
 [advisories]
 db-urls = ["https://github.com/rustsec/advisory-db"]
 yanked = "deny"
-ignore = []
+# Unmaintained notices, not vulnerabilities. Upstream chose bincode for its frozen wire codecs
+# and zbus for Linux desktop notifications; revisit when upstream migrates.
+ignore = [
+  { id = "RUSTSEC-2025-0141", reason = "bincode development ceased; pinned 2.0.1 is used for frozen codecs" },
+  { id = "RUSTSEC-2026-0370", reason = "zvariant merged into zbus 6; herdr still on zbus 5" },
+  { id = "RUSTSEC-2026-0371", reason = "zbus_names merged into zbus 6; herdr still on zbus 5" },
+  { id = "RUSTSEC-2026-0372", reason = "zvariant_derive merged into zbus 6; herdr still on zbus 5" },
+]
 
 [licenses]
+# Pruned to what the lockfile actually uses (2026-10-20). cargo deny warns when an entry goes unused.
 allow = [
   "Apache-2.0",
   "Apache-2.0 WITH LLVM-exception",
   "MIT",
   "BSD-2-Clause",
-  "BSD-3-Clause",
-  "ISC",
   "Zlib",
   "0BSD",
   "Unicode-3.0",
-  "Unicode-DFS-2016",
-  "MPL-2.0",
-  "WTFPL",
 ]
 confidence-threshold = 0.9
 
 [bans]
-multiple-versions = "warn"
-wildcards = "deny"
-allow-wildcard-paths = true
+# Duplicate versions and path deps are not supply-chain signals; the lockfile pins everything
+# and the sync report lists every added crate.
+multiple-versions = "allow"
+wildcards = "allow"
 deny = [
   { crate = "reqwest", reason = "no in-process HTTP; curl subprocess only" },
   { crate = "ureq", reason = "no in-process HTTP" },
@@ -61,9 +65,19 @@ deny = [
 # Crates shipping native executables or interpreted scripts are flagged; build scripts are not
 # allow-listed yet. To close that too, seed allow-build-scripts from a `cargo deny check bans` run.
 executables = "deny"
-interpreted = "warn"
+interpreted = "deny"
 include-dependencies = true
 include-archives = true
+# Known CI and maintenance scripts shipped inside crate tarballs (reviewed 2026-10-20). Nothing
+# executes them; a new or changed script shows up as an error until it is added here.
+bypass = [
+  { crate = "serial2", allow = [{ path = "check-targets" }] },
+  { crate = "sharded-slab", allow = [{ path = "bin/loom.sh" }] },
+  { crate = "signal-hook", allow = [{ path = "ci-check.sh" }] },
+  { crate = "smallvec", allow = [{ path = "scripts/run_miri.sh" }] },
+  { crate = "tracing", allow = [{ path = "test-macros/bin/macro-results.sh" }] },
+  { crate = "unicode-width", allow = [{ path = "scripts/unicode.py" }] },
+]
 
 [sources]
 unknown-registry = "deny"
