@@ -1,0 +1,55 @@
+# Paths whose changes get a mandatory read on every upstream sync (git pathspecs, one per line).
+# Build-time code and toolchain configuration
+build.rs
+crates/ghostty-vt/build.rs
+crates/ghostty-vt/Cargo.toml
+Cargo.toml
+Cargo.lock
+.cargo
+rust-toolchain.toml
+justfile
+.githooks
+scripts
+# Vendored terminal parser inputs and local patches (the parser source itself is reviewed via the Ghostty compare link)
+vendor/libghostty-vt.vendor.json
+vendor/libghostty-vt.patches.md
+vendor/patches
+vendor/libghostty-vt/build.zig
+vendor/libghostty-vt/build.zig.zon
+vendor/libghostty-vt/build.zig.zon.nix
+vendor/libghostty-vt/pkg/*/build.zig.zon
+vendor/portable-pty
+crates/ghostty-vt/src
+# Network, update and remote fetch surfaces
+src/noninteractive_process.rs
+src/update.rs
+src/checksum.rs
+src/detect/manifest_update.rs
+# OS integration, external process spawns, FFI
+src/platform
+src/server/autodetect.rs
+# Writes into other agents' config, socket API, plugins
+src/integration
+src/api
+src/app/api/plugins
+src/plugin_paths.rs
+src/cli/plugin.rs
+# What a remote endpoint can make the local client do
+src/client/mod.rs
+src/client/endpoint
+src/protocol
+src/remote
+# Paths, config, git spawns
+src/session.rs
+src/config/io.rs
+src/config/model.rs
+src/worktree.rs
+src/workspace/git
+# Packaging, CI, pinned inputs, binary assets
+nix
+flake.nix
+flake.lock
+distribution
+packaging
+assets
+.github

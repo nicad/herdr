@@ -1,0 +1,21 @@
+# Added-line patterns flagged in sync reports. Format: awk ERE <TAB> label. No \b (not POSIX awk).
+Command::new|process::Command	process spawn
+std::net::|TcpStream|TcpListener|UdpSocket	network socket
+UnixStream::connect|UnixListener::bind	unix socket
+(^|[^a-zA-Z_])curl([^a-zA-Z_]|$)	curl
+osascript|launchctl|pbcopy|pbpaste|open -a	macOS external command
+Keychain|SecItem|SecKeychain|security-framework|keyring|LAContext|TCC	keychain / secrets / TCC
+dlopen|dlsym|libloading	dynamic loading
+include_bytes!|include_str!	embedded blob
+unsafe[ {]	unsafe
+extern "C"	ffi declaration
+sh -c|/bin/sh|bash -c|zsh -c|ExecutionPolicy	shell -c
+https?://	url
+env::var\(|env!\(|option_env!\(	build/runtime env read
+set_var\(|remove_var\(	env mutation
+rustc-wrapper|runner *=|linker *=|RUSTFLAGS|\[patch|\[replace	cargo config injection
+git\+https|source = "git	git dependency
+proc-macro = true|^build = 	proc macro / build script
+remove_dir_all|set_mode\(|Permissions::from_mode|set_readonly	destructive fs / permissions
+base64|from_hex|hex::decode	encoded payload
+[A-Za-z0-9+/=_-]{120,}	opaque token
