@@ -1,6 +1,6 @@
 # herdr fork tooling
 
-Everything the personal hardened fork adds to upstream lives in `fork/` and `plans/`. Upstream never ships either directory, so rebasing onto new upstream commits has nothing to conflict with. The security audit and the decisions behind this setup are in `plans/security-audit-2026-10-19.md`.
+Everything the personal hardened fork adds to upstream lives in `fork/`. Upstream never ships that directory, so rebasing onto new upstream commits has nothing to conflict with. The security audit and the decisions behind this setup are in `fork/security-audit-2026-10-19.md`.
 
 Run every target as `make -C fork <target>` from the repository root. `make -C fork help` lists them.
 

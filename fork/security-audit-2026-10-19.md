@@ -23,7 +23,7 @@ Goal for now: run upstream herdr on macOS and Linux with the smallest possible d
 4. Decline plugins. Integrations may be installed.
 5. `git config --global core.hooksPath /dev/null` for your own shells and for herdr's git spawns.
 
-**Fork layout and rebase workflow.** `master` mirrors upstream `herdrdev/herdr`. The fork branch carries only `plans/` and `fork/`, which upstream never ships, so a rebase has nothing to conflict with. `fork/Makefile` automates the cycle; see `fork/README.md`:
+**Fork layout and rebase workflow.** `master` mirrors upstream `herdrdev/herdr`. The fork branch carries only `fork/`, which upstream never ships, so a rebase has nothing to conflict with. `fork/Makefile` automates the cycle; see `fork/README.md`:
 
 ```sh
 make -C fork fetch sync-report     # report for <merge-base>..upstream/master under fork/reports/
