@@ -2,7 +2,7 @@
 
 Everything the personal hardened fork adds to upstream lives in `fork/`. Upstream never ships that directory, so rebasing onto new upstream commits has nothing to conflict with. The security audit and the decisions behind this setup are in `fork/security-audit-2026-10-19.md`.
 
-Run every target as `make -C fork <target>` from the repository root. `make -C fork help` lists them.
+Run every target as `make -C fork <target>` from the repository root. `make -C fork help` lists them. Step-by-step installation for a new machine is in `INSTALL.md`.
 
 ## One-time setup
 
@@ -49,6 +49,7 @@ A build with warm caches makes no connection. A cold build fetches from exactly 
 
 | Host | What | Pinned by |
 |---|---|---|
+| `static.rust-lang.org` | the Rust toolchain pinned in `rust-toolchain.toml`, on the first `cargo` call | rustup's signed manifests |
 | `ziglang.org` | Zig 0.16.0 toolchain (`make -C fork zig`) | sha256 in `scripts/zig-install.sh` |
 | `index.crates.io`, `static.crates.io` | Rust crates | `Cargo.lock` checksums, `--locked` |
 | `github.com` | RustSec advisory database for cargo deny and cargo audit | git clone, read-only data |
