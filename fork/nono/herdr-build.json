@@ -1,0 +1,43 @@
+{
+  "extends": "default",
+  "meta": {
+    "name": "herdr-build",
+    "description": "Build, audit and check the herdr fork with no access to credentials and network limited to the known build hosts"
+  },
+  "groups": {
+    "include": ["rust_runtime", "git_config", "user_caches_linux", "linux_temp_read"]
+  },
+  "workdir": {
+    "access": "readwrite"
+  },
+  "filesystem": {
+    "allow": [
+      "$HOME/.cargo",
+      "$HOME/.rustup",
+      "$HOME/.cache/zig",
+      "$HOME/.cache/cargo-deny"
+    ],
+    "read": [
+      "$HOME/.config/herdr",
+      "$HOME/.local/state/herdr"
+    ],
+    "read_file": [
+      "/etc/gitconfig",
+      "/opt/homebrew/etc/gitconfig",
+      "/usr/local/etc/gitconfig"
+    ]
+  },
+  "network": {
+    "allow_domain": [
+      "static.rust-lang.org",
+      "index.crates.io",
+      "static.crates.io",
+      "github.com",
+      "codeload.github.com",
+      "objects.githubusercontent.com",
+      "deps.files.ghostty.org",
+      "codeberg.org",
+      "ziglang.org"
+    ]
+  }
+}

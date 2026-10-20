@@ -39,11 +39,19 @@ NEW ?= $(UPSTREAM_REF)
 
 BASELINE_FILES := linked-libs undefined-symbols flagged-symbols urls exec-strings
 
+# Sandboxed build shell (nono). Everything except `install` and `git push` runs inside it.
+NONO         ?= nono
+NONO_PROFILE := $(FORK)/nono/herdr-build.json
+
 .DEFAULT_GOAL := help
-.PHONY: help tools zig upstream-remote check-config fetch sync-report rebase build audit binary-check baseline verify install clean
+.PHONY: help shell nono-check tools zig upstream-remote check-config fetch sync-report rebase build audit binary-check baseline verify install clean
 
 help:
 	@echo "herdr fork workflow (make -C fork <target>)"
+	@echo ""
+	@echo "Sandbox:"
+	@echo "  shell            open a nono-sandboxed shell in the repo; run the targets below inside it"
+	@echo "  nono-check       validate the sandbox profile and show what it grants"
 	@echo ""
 	@echo "First time:"
 	@echo "  tools            cargo install cargo-deny cargo-audit (osv-scanner optional)"
@@ -62,6 +70,13 @@ help:
 	@echo "  verify, install"
 	@echo ""
 	@echo "Variables: OLD=<rev> NEW=<rev> UPSTREAM_REF=<ref> PREFIX=<dir> AUDIT_IGNORE='--ignore RUSTSEC-...'"
+
+shell:
+	cd $(ROOT) && $(NONO) shell --profile $(NONO_PROFILE) --workdir $(ROOT) --allow-cwd --name herdr-build
+
+nono-check:
+	$(NONO) profile validate $(NONO_PROFILE)
+	cd $(ROOT) && $(NONO) run --profile $(NONO_PROFILE) --workdir $(ROOT) --allow-cwd --dry-run -- make -C fork verify
 
 tools:
 	cargo install --locked cargo-deny cargo-audit

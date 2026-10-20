@@ -28,13 +28,28 @@ git checkout fork
 
 `master` mirrors upstream and carries nothing of ours; `fork` adds only the `fork/` directory.
 
-## 3. Install the audit tools and the pinned Zig
+## 3. Install nono and enter the build sandbox
+
+nono is the one tool that runs outside the sandbox, so install it from a verified release rather than a pipe-to-shell script:
+
+```sh
+brew install nono                      # macOS
+# Linux: download nono-v<ver>-<arch>-unknown-linux-gnu.tar.gz and SHA256SUMS.txt from
+# https://github.com/nolabs-ai/nono/releases, verify, and put `nono` on PATH
+nono setup --check-only
+make -C fork nono-check                # validates fork/nono/herdr-build.json and prints the grants
+make -C fork shell                     # everything from here on runs inside this shell
+```
+
+Inside the shell, install the audit tools and the pinned Zig:
 
 ```sh
 make -C fork tools    # cargo-deny and cargo-audit, built with --locked
 make -C fork zig      # Zig 0.16.0 into fork/toolchain/, checksum verified against the values pinned in the script
 make -C fork upstream-remote
 ```
+
+The sandbox denies `~/.ssh`, `~/.gnupg`, `~/.aws`, keychains, browser data and shell configs, limits writes to the repository and the Rust and Zig caches, and routes network through nono's proxy with only the hosts in section 7 allowed. If a build step fails with a permission or network error, `nono why --path <file> --op read` or `nono why --self --host <url>` explains which rule denied it; extend `fork/nono/herdr-build.json` only after understanding why the step needs it.
 
 ## 4. Configure herdr before the first run
 
@@ -78,7 +93,7 @@ git add fork/baseline && git commit -m 'chore: add <os> binary baseline'
 
 Expected on macOS: libSystem, CoreFoundation, Carbon and IOKit as linked libraries; no `Sec*`, `LA*` or TCC symbols; URLs limited to herdr.dev, github.com, formulae.brew.sh, json-schema.org and documentation links. Expected on Linux: libc, libm, libgcc_s and the dynamic loader; the standard library's spawn and socket symbols plus `dlsym`.
 
-Install where agents cannot write:
+Install where agents cannot write. This step runs outside the nono shell because it needs `sudo`, and so does `git push`, which needs `~/.ssh`:
 
 ```sh
 sudo make -C fork install                 # /usr/local/bin/herdr

@@ -4,6 +4,19 @@ Everything the personal hardened fork adds to upstream lives in `fork/`. Upstrea
 
 Run every target as `make -C fork <target>` from the repository root. `make -C fork help` lists them. Step-by-step installation for a new machine is in `INSTALL.md`.
 
+## Sandboxed build shell
+
+Build-time code is the largest arbitrary-code surface in this setup: crate build scripts and proc macros, the Zig build files of the vendored parser, and the dependency trees of the audit tools. All of it runs under nono so it cannot read credentials and can only reach the build hosts:
+
+```sh
+make -C fork shell            # nono shell with fork/nono/herdr-build.json; run every other target inside it
+make -C fork nono-check       # validate the profile and print what a verify run would be granted
+```
+
+The profile extends nono's `default` (credentials, keychains, browser data, shell configs denied) and adds: read-write on the repository, `~/.cargo`, `~/.rustup`, `~/.cache/zig` and `~/.cache/cargo-deny`; read-only on `~/.config/herdr` and `~/.local/state/herdr`; and a domain allowlist equal to the build-time network table below. Two things stay outside the sandbox by design: `make -C fork install` (needs `sudo`) and `git push` (needs `~/.ssh`). Inside the shell, `git fetch upstream` works because upstream is HTTPS.
+
+nono warns that `~/.cargo/bin` is both on `PATH` and writable inside the sandbox. That is inherent to `cargo install`; the warning is the reminder that a compromised build could plant a binary there, which the Linux and macOS baselines do not cover. Keep `~/.cargo/bin` out of `PATH` for shells that run agents if that matters to you.
+
 ## One-time setup
 
 ```sh
@@ -79,6 +92,7 @@ Ghostty (the vendored terminal parser) and Zig have no cargo coverage. When the 
 - `scripts/check-config.sh`: local config verification.
 - `watchlist.txt`, `diff-patterns.txt`: what the report diffs and flags.
 - `deny.toml`: cargo-deny policy.
+- `nono/herdr-build.json`: nono profile for the build shell.
 - `REVIEW.md`: the review prompt.
 - `baseline/<os>/`: accepted binary-check output, committed.
 - `reports/`, `out/`: generated, ignored by git.
