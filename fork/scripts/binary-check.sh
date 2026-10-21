@@ -30,9 +30,10 @@ esac
 grep -E '^_?(Sec(Item|Keychain|Access|Trust|Key|Code|Task)[A-Za-z]*|LA(Context|Policy)[A-Za-z]*|SSLCreate[A-Za-z]*|dlopen|dlsym|AXIsProcessTrusted|CGWindowList[A-Za-z]*|CGDisplayCreateImage|IOHIDRequestAccess|AVCaptureDevice[A-Za-z]*|CLLocationManager[A-Za-z]*|ptrace|task_for_pid|csops|posix_spawn[a-z_]*|execve|execvp|system|popen|keyctl|connect|socket|bind)(@.*)?$' \
     "$OUT/undefined-symbols.txt" > "$OUT/flagged-symbols.txt" || true
 
-strings -n 8 "$BIN" | grep -oE 'https?://[A-Za-z0-9._/-]+' | sort -u > "$OUT/urls.txt"
+# grep exits 1 on no match, which pipefail would turn into a silent exit; an empty file is a valid result.
+strings -n 8 "$BIN" | { grep -oE 'https?://[A-Za-z0-9._/-]+' || true; } | sort -u > "$OUT/urls.txt"
 strings -n 2 "$BIN" \
-    | grep -E '^(/usr/bin/[a-z-]+|/bin/[a-z]+|/usr/local/bin/[a-z-]+|osascript|open|pbcopy|pbpaste|launchctl|afplay|terminal-notifier|notify-send|xdg-open|wl-copy|xclip|xsel|ssh|scp|git|curl|sh|bash|zsh|powershell|powershell\.exe|cmd\.exe)$' \
+    | { grep -E '^(/usr/bin/[a-z-]+|/bin/[a-z]+|/usr/local/bin/[a-z-]+|osascript|open|pbcopy|pbpaste|launchctl|afplay|terminal-notifier|notify-send|xdg-open|wl-copy|xclip|xsel|ssh|scp|git|curl|sh|bash|zsh|powershell|powershell\.exe|cmd\.exe)$' || true; } \
     | sort -u > "$OUT/exec-strings.txt"
 
 "$BIN" --version > "$OUT/version.txt" 2>&1 || true

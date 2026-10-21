@@ -1,0 +1,7 @@
+/System/Library/Frameworks/Carbon.framework/Versions/A/Carbon
+/System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation
+/System/Library/Frameworks/Foundation.framework/Versions/C/Foundation
+/System/Library/Frameworks/IOKit.framework/Versions/A/IOKit
+/usr/lib/libSystem.B.dylib
+/usr/lib/libiconv.2.dylib
+/usr/lib/libobjc.A.dylib

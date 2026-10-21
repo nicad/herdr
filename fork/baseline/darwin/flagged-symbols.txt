@@ -1,0 +1,14 @@
+_bind
+_connect
+_dlsym
+_execve
+_execvp
+_posix_spawn_file_actions_destroy
+_posix_spawn_file_actions_init
+_posix_spawnattr_destroy
+_posix_spawnattr_init
+_posix_spawnattr_setflags
+_posix_spawnattr_setpgroup
+_posix_spawnattr_setsigdefault
+_posix_spawnp
+_socket

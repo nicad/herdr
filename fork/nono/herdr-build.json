@@ -24,7 +24,9 @@
     "read_file": [
       "/etc/gitconfig",
       "/opt/homebrew/etc/gitconfig",
-      "/usr/local/etc/gitconfig"
+      "/usr/local/etc/gitconfig",
+      "$HOME/.gitconfig-nicad",
+      "$HOME/.gitconfig-voidexpr"
     ]
   },
   "network": {

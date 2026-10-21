@@ -76,7 +76,7 @@ shell:
 
 nono-check:
 	$(NONO) profile validate $(NONO_PROFILE)
-	cd $(ROOT) && $(NONO) run --profile $(NONO_PROFILE) --workdir $(ROOT) --allow-cwd --dry-run -- make -C fork verify
+	cd $(ROOT) && $(NONO) run -v --profile $(NONO_PROFILE) --workdir $(ROOT) --allow-cwd --dry-run -- make -C fork verify
 
 tools:
 	cargo install --locked cargo-deny cargo-audit
